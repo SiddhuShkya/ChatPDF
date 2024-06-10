@@ -1,7 +1,5 @@
 import streamlit as st 
 from templates import css, bot_template, user_template
-
-st.session_state.chat_history = []
     
 class History:
     def __init__(self):
