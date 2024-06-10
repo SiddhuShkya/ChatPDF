@@ -1,6 +1,10 @@
 import streamlit as st 
 from templates import css, bot_template, user_template
     
+    
+if "chat_history" not in st.session_state:
+     st.session_state.chat_history = []
+    
 class History:
     def __init__(self):
         print("History class called")
