@@ -21,7 +21,6 @@ class Chat:
         self.vector_store = vector_store
         load_dotenv()
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        self.st.session_state.chat_history = []
         print("Chat class called")
         
     def check_embedding(self, store_name):
@@ -57,13 +56,13 @@ class Chat:
             return_only_outputs=True
         )
         answer = response["output_text"]
-        self.st.session_state.chat_history.append({
+        st.session_state.chat_history.append({
             'question': user_question,
             'answer': answer,
             'time': self.get_timestamp()
         })
         # Accessing dictionary keys directly
-        last_interaction = self.st.session_state.chat_history[-1]
+        last_interaction = st.session_state.chat_history[-1]
         st.write(user_template.replace("{{MSG}}", last_interaction['question']), unsafe_allow_html=True)
         st.write(bot_template.replace("{{MSG}}", last_interaction['answer']), unsafe_allow_html=True)
 
