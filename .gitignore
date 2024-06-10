@@ -1,0 +1,4 @@
+.env
+faiss_index
+__pyache__
+venv
