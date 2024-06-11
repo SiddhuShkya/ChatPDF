@@ -10,7 +10,13 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGener
 
 if "main" not in st.session_state:
     st.session_state.main = None
+
+if "pdf" not in st.session_state:
+    st.session_state.pdf = None
     
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+
 class Main:
     def __init__(self):
         print("Main class called")
@@ -50,28 +56,28 @@ class Main:
         prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
         chain = load_qa_chain(model, chain_type="stuff", prompt=prompt, document_variable_name="context")
         return chain
-    
+
 
 def main(app):
     uploaded_pdf = False
     st.set_page_config(page_title="ChatPDF", page_icon="📑", layout="wide")
     with st.sidebar:
         st.title("Chat with PDF 📑")
-        pdf = st.file_uploader(label=":blue[select PDF to upload]", type="pdf")
-        if pdf:
-            if app.checkPDF(pdf):
-                pdf_copy = BytesIO(pdf.read()) 
-                store_name = pdf.name[:-4]
+        st.session_state.pdf = st.file_uploader(label=":blue[select PDF to upload]", type="pdf")
+        if st.session_state.pdf:
+            if app.checkPDF(st.session_state.pdf):
+                pdf_copy = BytesIO(st.session_state.pdf.read()) 
+                store_name = st.session_state.pdf.name[:-4]
                 with st.spinner("Processing"):
-                    raw_texts = app.get_pdf_text(pdf=pdf)
+                    raw_texts = app.get_pdf_text(pdf=st.session_state.pdf)
                     text_chunks = app.get_text_chunks(texts=raw_texts)
                     vectorstore = app.get_vector_store(chunks=text_chunks, store_name=store_name)
-                    chat = Chat(store_name=store_name, pdf_copy=pdf_copy, vector_store=vectorstore)
-                    history = History()
                 st.success("PDF Successfully Uploaded 😁")
                 st.balloons()
-                uploaded_pdf = True
-                
+                st.session_state.uploaded_pdf = True
+                st.session_state.store_name = store_name
+                st.session_state.pdf_copy = pdf_copy
+                st.session_state.vectorstore = vectorstore
             page = option_menu(
                     menu_title="Options",
                     options=["Chat", "History"],
@@ -86,8 +92,12 @@ def main(app):
                     }
                     
                 )
-    if uploaded_pdf:       
-        pages = {"Chat": chat.app, "History": history.app}
+    if st.session_state.get("uploaded_pdf"):       
+        if "chat" not in st.session_state:
+            st.session_state.chat = Chat(store_name=st.session_state.store_name, pdf_copy=st.session_state.pdf_copy, vector_store=st.session_state.vectorstore)
+        if "history" not in st.session_state:
+            st.session_state.history = History()
+        pages = {"Chat": st.session_state.chat.app, "History": st.session_state.history.app}
         if page in pages:
             pages[page]()
 
@@ -96,5 +106,3 @@ if __name__ == '__main__':
     if st.session_state.main is None:
         st.session_state.main = Main()
     main(app=st.session_state.main)
-
-
