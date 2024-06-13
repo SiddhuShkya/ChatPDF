@@ -28,7 +28,7 @@ css = '''
     width: 85%;
     padding: 0 1.5rem;
     color: #fff;
-    font-size: 18px;
+    font-size: 20px;
 }
 </style>
 '''
